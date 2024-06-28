@@ -1,0 +1,5 @@
+mesa_id,mesa_codigo,mesa_capacidad,mesa_estado
+15,12818,3,"con cliente sin atender"
+16,10723,5,"con cliente sin atender"
+17,,5,"con cliente sin atender"
+18,,10,"con cliente sin atender"
