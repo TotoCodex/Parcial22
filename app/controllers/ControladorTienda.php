@@ -134,28 +134,6 @@ class ControladorTienda{
             return false;
         }
 }
-    function traerProductos(Request $request, Response $response, array $args): Response {
-        
-        $listadeproductos = self::select();
-        
-        
-        $productosArray = json_decode(json_encode($listadeproductos), true);
-        $archivoCSV='productos.csv';
-        ControladorUsuario::traerCSV($productosArray,$archivoCSV);
-    
-
-        $csvContenido = file_get_contents($archivoCSV);
-
-    
-        $response = $response->withHeader('Content-Type', 'text/csv') // Hay que setear los headers para que en el output pueda aparecer el csv
-                            ->withHeader('Content-Disposition', 'attachment; filename="' . $archivoCSV . '"')
-                            ->withStatus(200); // OK
-
-        // Write CSV content to response body
-        $response->getBody()->write($csvContenido);
-        return $response;
-    }
-
     public static function select(){
         $conn= DB::Connect();
 
@@ -200,39 +178,7 @@ class ControladorTienda{
             return false;
         }
     }
-    function updateprodtablaSQL(Request $request, Response $response, array $args): Response {
     
-        
-        $archivoCSV='productos.csv';
-
-
-        $csvContenido = file_get_contents($archivoCSV);
-        $arraynuevo=array();
-        $contenidoArray= explode("\n",$csvContenido);
-        array_pop($contenidoArray);//me saca el ultimo string vacio "" que aparece al final de cada CSV
-        array_shift($contenidoArray);//me saca el primer array de strings que contiene los headers de mi CSV
-        
-
-        $conn = DB::Connect(); 
-        $stmt1=$conn->prepare("DELETE FROM productos");
-        $stmt1->execute();
-
-        $stmtAlter = $conn->prepare("ALTER TABLE productos AUTO_INCREMENT = 1");
-        $stmtAlter->execute();
-
-        foreach ($contenidoArray as $strings){
-            $arraydeString=explode(",",$strings);
-
-            $stmt = $conn->prepare("INSERT INTO productos (producto_nombre, producto_categoria, producto_precio) VALUES (:producto_nombre, :producto_categoria, :producto_precio)");
-             
-            $stmt->bindParam(':producto_nombre', $arraydeString[1]); 
-            $stmt->bindParam(':producto_categoria', $arraydeString[2]); 
-            $stmt->bindParam(':producto_precio', $arraydeString[3]); 
-        
-            $stmt->execute();
-        }
-        return $response->withStatus(200);
-    }
     
     
 

@@ -69,6 +69,16 @@
 		{
 			"name": "TiendaConsultar",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTk3ODkyMzIsImV4cCI6MTcxOTg0OTIzMiwiYXVkIjoiYTA4OTIxYzA2YmIxNGVlMDc1OTdmMzE4YTQ2ZjVhNDU0YzliYmIwMyIsImRhdGEiOnsidXNlcm5hbWUiOiJsb3F1aXRvIiwicGVyZmlsIjoiZW1wbGVhZG8ifSwiYXBwIjoiVGVzdCBKV1QifQ.ObeN2F3BgS2qZMNWyBbG64j7Gfsn3RmXbe9R9t1SkUw",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -81,18 +91,18 @@
 						},
 						{
 							"key": "tipo",
-							"value": "Cartucho",
+							"value": "Casd",
 							"type": "text"
 						},
 						{
 							"key": "color",
-							"value": "rosa",
+							"value": "ro",
 							"type": "text"
 						}
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/tienda/consultar",
+					"raw": "http://localhost:666/tienda/consultar/ventas/ingresos",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -100,7 +110,9 @@
 					"port": "666",
 					"path": [
 						"tienda",
-						"consultar"
+						"consultar",
+						"ventas",
+						"ingresos"
 					]
 				}
 			},
@@ -180,21 +192,17 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/productos/vendidos?fecha=2 / Jun / 2024",
+					"raw": "http://localhost:666/tienda/consultar/productos/vendidos",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "666",
 					"path": [
+						"tienda",
+						"consultar",
 						"productos",
 						"vendidos"
-					],
-					"query": [
-						{
-							"key": "fecha",
-							"value": "2 / Jun / 2024"
-						}
 					]
 				}
 			},
@@ -219,21 +227,17 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/productos/vendidos?fecha=2 / Jun / 2024",
+					"raw": "http://localhost:666/tienda/consultar/ventas/porUsuario",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "666",
 					"path": [
-						"productos",
-						"vendidos"
-					],
-					"query": [
-						{
-							"key": "fecha",
-							"value": "2 / Jun / 2024"
-						}
+						"tienda",
+						"consultar",
+						"ventas",
+						"porUsuario"
 					]
 				}
 			},
@@ -258,21 +262,17 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/ventas/porProducto?tipo",
+					"raw": "http://localhost:666/tienda/consultar/ventas/porProducto",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "666",
 					"path": [
+						"tienda",
+						"consultar",
 						"ventas",
 						"porProducto"
-					],
-					"query": [
-						{
-							"key": "tipo",
-							"value": null
-						}
 					]
 				}
 			},
@@ -284,6 +284,16 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTk3ODkyMzIsImV4cCI6MTcxOTg0OTIzMiwiYXVkIjoiYTA4OTIxYzA2YmIxNGVlMDc1OTdmMzE4YTQ2ZjVhNDU0YzliYmIwMyIsImRhdGEiOnsidXNlcm5hbWUiOiJsb3F1aXRvIiwicGVyZmlsIjoiZW1wbGVhZG8ifSwiYXBwIjoiVGVzdCBKV1QifQ.ObeN2F3BgS2qZMNWyBbG64j7Gfsn3RmXbe9R9t1SkUw",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -297,24 +307,26 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/productos/entreValores?precio_minimo=1000&precio_maximo=1500",
+					"raw": "http://localhost:666/tienda/consultar/productos/entreValores?precio_minimo=0&precio_maximo=1000",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "666",
 					"path": [
+						"tienda",
+						"consultar",
 						"productos",
 						"entreValores"
 					],
 					"query": [
 						{
 							"key": "precio_minimo",
-							"value": "1000"
+							"value": "0"
 						},
 						{
 							"key": "precio_maximo",
-							"value": "1500"
+							"value": "1000"
 						}
 					]
 				}
@@ -340,25 +352,17 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/productos/entreValores?precio_minimo=1000&precio_maximo=1500",
+					"raw": "http://localhost:666/tienda/consultar/ventas/ingresos",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "666",
 					"path": [
-						"productos",
-						"entreValores"
-					],
-					"query": [
-						{
-							"key": "precio_minimo",
-							"value": "1000"
-						},
-						{
-							"key": "precio_maximo",
-							"value": "1500"
-						}
+						"tienda",
+						"consultar",
+						"ventas",
+						"ingresos"
 					]
 				}
 			},
@@ -383,15 +387,184 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:666/producto/masVendido",
+					"raw": "http://localhost:666/tienda/consultar/productos/masVendido",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "666",
 					"path": [
-						"producto",
+						"tienda",
+						"consultar",
+						"productos",
 						"masVendido"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "VentasModificar",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "numero_pedido",
+							"value": "47234",
+							"type": "text"
+						},
+						{
+							"key": "mail",
+							"value": "mica@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "marca",
+							"value": "Epson",
+							"type": "text"
+						},
+						{
+							"key": "tipo",
+							"value": "Cartucho",
+							"type": "text"
+						},
+						{
+							"key": "modelo",
+							"value": "1102pw",
+							"type": "text"
+						},
+						{
+							"key": "cantidad",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:666/ventas/modificar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"ventas",
+						"modificar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "RegistroUsuarios",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "mail",
+							"value": "as@yahopo.com",
+							"type": "text"
+						},
+						{
+							"key": "usuario",
+							"value": "loquito",
+							"type": "text"
+						},
+						{
+							"key": "contraseña",
+							"value": "1234",
+							"type": "text"
+						},
+						{
+							"key": "perfil",
+							"value": "empleado",
+							"type": "text"
+						},
+						{
+							"key": "foto",
+							"type": "file",
+							"src": "/C:/Users/tobia/OneDrive/Imágenes/Fotos Viejas/100K7430/100_1036.JPG"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:666/registro",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"registro"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LogUsuarios",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "username",
+							"value": "tobias23",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "2wwda22",
+							"type": "text"
+						},
+						{
+							"key": "perfil",
+							"value": "admin",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:666/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "VentasCSV",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:666/tienda/ventas/descargar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"tienda",
+						"ventas",
+						"descargar"
 					]
 				}
 			},

@@ -76,81 +76,34 @@ class ControladorVenta{
     
         
     }
-    public function guardarventaImagen($marca,$tipo,$modelo,$mail,$fecha_imagen){
-        $directorioCreado=false;
-        if(!file_exists("ImagenesDeVenta/2024/")){
-            mkdir("ImagenesDeVenta/2024/", 0777, true);
-            $directorioCreado=true;
-        }
-        $fecha = str_replace('/','_',$fecha_imagen);
-        $usuario = explode('@', $mail);
-        $usuario=$usuario[0];
-
-        if(isset($_FILES['imagen'])) {//si hay una imagen que se extrae de FILES que no sea NULL
-            $nombreArchivo = $_FILES['imagen']['name'];//extrae el nombre de mi archivo
-            $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION); 
-            $nuevoNombre = $marca . "_" . $tipo. "_". $modelo . "_" . $usuario . "_" . $fecha . "." . $extension;
-            $rutaArchivo = "ImagenesDeVenta/2024/" . $nuevoNombre;
-            if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaArchivo)) {
-                echo "La imagen se cargó correctamente"."</br>"; 
-            } else {
-                echo "Error cargando imagen."."</br>"; 
-            }
-        } 
-        else {
-            echo "No hay imagen cargada."."</br>";
-        }
-    }
-    public static function chequearExistencia($marca,$tipo,$modelo,$color){
-        $conn = DB::Connect();
-        $stmt = $conn->prepare("SELECT * FROM tienda WHERE producto_marca = :marca AND producto_tipo = :tipo AND producto_color = :color AND producto_modelo = :modelo");
-        $stmt->bindParam(':marca', $marca);
-        $stmt->bindParam(':tipo', $tipo);
-        $stmt->bindParam(':color', $color);
-        $stmt->bindParam(':modelo', $modelo);
-
-        $stmt->execute();
-        $vsExistentes = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return($vsExistentes);
-    }
-
-    public function updetearStock($marca,$tipo,$modelo,$color,$stock){
-        $conn = DB::Connect();
-        try{$stmt = $conn->prepare("UPDATE tienda SET producto_stock = producto_stock - :stock_a_restar
-                                WHERE producto_tipo = :tipo AND producto_marca = :marca AND producto_modelo = :modelo AND producto_color = :color");
-        
-        $stmt->bindParam(':stock_a_restar', $stock);
-        $stmt->bindParam(':tipo', $tipo);
-        $stmt->bindParam(':marca', $marca);
-        $stmt->bindParam(':modelo', $modelo);
-        $stmt->bindParam(':color', $color);
-        $stmt->execute();
-        }catch(PDOException $e) {
-            echo "Error: " . $e->getMessage();
-            return false;
-        }
-}
     function productosVendidos(Request $request, Response $response, array $args): Response {
         
         $fecha = $request->getQueryParams()['fecha'];
-
-        $listadeVentas = self::chequearProductosVendidos($fecha);
-        $fecha=explode('/',$fecha);
-
-        if(empty($listadeVentas)){
-            $fecha_actualizada=($fecha[0]-1);
-            $listadeVentas = self::chequearProductosVendidos($fecha_actualizada." /". $fecha[1]. "/".$fecha[2]); // SOLO FUNCIONA SI LE DOY A UN DIA POR EJEMPLO 30 y no existe me muetra las ventas del 29
+        if($fecha == NULL){
+            date_default_timezone_set("America/Argentina/Buenos_Aires"); 
+            $fecha= date("d / M / o");
+            $fecha=explode('/',$fecha);
+            
+            $fecha_a=($fecha[0]-1);
+            $listadeVentas = self::chequearProductosVendidos($fecha_a." /". $fecha[1]. "/".$fecha[2]);
+            if(!empty($listadeVentas)){
+                $response->getBody()->write(json_encode([$listadeVentas]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+            }
+            else{
+                $response->getBody()->write(json_encode(['error=> Registro de Ventas NO EXISTE']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+            }
+            
+        }
+        else{
+            $listadeVentas = self::chequearProductosVendidos($fecha); // SOLO FUNCIONA SI LE DOY A UN DIA POR EJEMPLO 30 y no existe me muetra las ventas del 29
             if(empty($listadeVentas)){
                 $response->getBody()->write(json_encode(['error=> Registro de Ventas NO EXISTE']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
             }
             $response->getBody()->write(json_encode([$listadeVentas]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-        }
-        else{
-            $response->getBody()->write(json_encode([$listadeVentas]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         }
         }
     function ventasPorUsuario(Request $request, Response $response, array $args): Response {
@@ -223,6 +176,140 @@ class ControladorVenta{
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
                                            
     }
+    function ventasModificar(Request $request, Response $response, array $args): Response {
+        $numero_pedido = $request->getParsedBody()['numero_pedido'];
+        $mail = $request->getParsedBody()['mail'];
+        $marca = $request->getParsedBody()['marca'];
+        $tipo = $request->getParsedBody()['tipo'];
+        $modelo = $request->getParsedBody()['modelo'];
+        $cantidad = $request->getParsedBody()['cantidad'];
+
+
+
+        $resultado=self::updetearVentas($numero_pedido,$mail,$marca,$tipo,$modelo,$cantidad);
+        if($resultado == 'Actualizado'){
+            self::updetearStockporModificaciondeVenta($marca,$tipo,$modelo,$cantidad,$numero_pedido);
+            $response->getBody()->write(json_encode([$resultado]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        }
+        else{
+            $response->getBody()->write(json_encode([$resultado]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+        
+          
+
+    }
+    function descargarVentasCSV(Request $request, Response $response, array $args): Response {
+        
+        $listadeventas = self::select();
+        
+        
+        $ventasArray = json_decode(json_encode($listadeventas), true);
+        $archivoCSV='ventas.csv';
+        self::traerCSV($ventasArray,$archivoCSV);
+    
+
+        $csvContenido = file_get_contents($archivoCSV);
+
+    
+        $response = $response->withHeader('Content-Type', 'text/csv') // Hay que setear los headers para que en el output pueda aparecer el csv
+                            ->withHeader('Content-Disposition', 'attachment; filename="' . $archivoCSV . '"')
+                            ->withStatus(200); // OK
+
+        // Write CSV content to response body
+        $response->getBody()->write($csvContenido);
+        return $response;
+    }
+
+    public static function select(){
+        $conn= DB::Connect();
+
+        $select = "SELECT * FROM ventas";
+        $stmt= $conn->prepare($select);
+        
+        try{
+            $stmt->execute();
+            $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return($productos);
+        }
+        catch (Exception $e){
+            echo "Error al traer ventas" . $e->getMessage(); 
+
+        }
+    }
+    public function guardarventaImagen($marca,$tipo,$modelo,$mail,$fecha_imagen){
+        $directorioCreado=false;
+        if(!file_exists("ImagenesDeVenta/2024/")){
+            mkdir("ImagenesDeVenta/2024/", 0777, true);
+            $directorioCreado=true;
+        }
+        $fecha = str_replace('/','_',$fecha_imagen);
+        $usuario = explode('@', $mail);
+        $usuario=$usuario[0];
+
+        if(isset($_FILES['imagen'])) {//si hay una imagen que se extrae de FILES que no sea NULL
+            $nombreArchivo = $_FILES['imagen']['name'];//extrae el nombre de mi archivo
+            $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION); 
+            $nuevoNombre = $marca . "_" . $tipo. "_". $modelo . "_" . $usuario . "_" . $fecha . "." . $extension;
+            $rutaArchivo = "ImagenesDeVenta/2024/" . $nuevoNombre;
+            if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaArchivo)) {
+                echo "La imagen se cargó correctamente"."</br>"; 
+            } else {
+                echo "Error cargando imagen."."</br>"; 
+            }
+        } 
+        else {
+            echo "No hay imagen cargada."."</br>";
+        }
+    }
+    public static function chequearExistencia($marca,$tipo,$modelo,$color){
+        $conn = DB::Connect();
+        $stmt = $conn->prepare("SELECT * FROM tienda WHERE producto_marca = :marca AND producto_tipo = :tipo AND producto_color = :color AND producto_modelo = :modelo");
+        $stmt->bindParam(':marca', $marca);
+        $stmt->bindParam(':tipo', $tipo);
+        $stmt->bindParam(':color', $color);
+        $stmt->bindParam(':modelo', $modelo);
+
+        $stmt->execute();
+        $vsExistentes = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return($vsExistentes);
+    }
+    public static function updetearStock($marca,$tipo,$modelo,$color,$stock){
+        $conn = DB::Connect();
+        try{$stmt = $conn->prepare("UPDATE tienda SET producto_stock = producto_stock - :stock_a_restar
+                                WHERE producto_tipo = :tipo AND producto_marca = :marca AND producto_modelo = :modelo AND producto_color = :color");
+        
+        $stmt->bindParam(':stock_a_restar', $stock);
+        $stmt->bindParam(':tipo', $tipo);
+        $stmt->bindParam(':marca', $marca);
+        $stmt->bindParam(':modelo', $modelo);
+        $stmt->bindParam(':color', $color);
+        $stmt->execute();
+        }catch(PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
+}
+    public static function updetearStockporModificaciondeVenta($marca,$tipo,$modelo,$stock){
+        
+        $conn=DB::Connect();
+        try{$stmt = $conn->prepare("UPDATE tienda 
+                                    SET producto_stock = producto_stock - :stock_a_restar
+                                    WHERE producto_tipo = :tipo AND producto_marca = :marca AND producto_modelo = :modelo ");
+        
+        $stmt->bindParam(':stock_a_restar', $stock);
+        $stmt->bindParam(':tipo', $tipo);
+        $stmt->bindParam(':marca', $marca);
+        $stmt->bindParam(':modelo', $modelo);
+        
+        $stmt->execute();
+        }catch(PDOException $e) {
+            echo "Error: " . $e->getMessage();
+            return false;
+        }
+    }
     public static function buscarProductoMasStock($arraycontenedordeStocks) {
         $maxStock = 0;
         $productoMasStock = null;
@@ -235,6 +322,50 @@ class ControladorVenta{
         }
     
         return $productoMasStock;
+    }
+    public static function updetearVentas($numero_pedido,$mail,$marca,$tipo,$modelo,$cantidad){
+        $conn = DB::Connect();
+        $stmt1 = $conn->prepare("SELECT * FROM tienda WHERE producto_marca= :producto_marca AND producto_tipo = :producto_tipo AND producto_modelo = :producto_modelo AND producto_stock - :producto_stock > 0  ");
+        $stmt1->bindParam(':producto_stock', $cantidad);
+        $stmt1->bindParam(':producto_tipo', $tipo);
+        $stmt1->bindParam(':producto_marca', $marca);
+        $stmt1->bindParam(':producto_modelo', $modelo);
+        $stmt1->execute();
+        $productosdisponiblesaModificar = $stmt1->fetchAll(PDO::FETCH_ASSOC);
+        
+
+        if (!empty($productosdisponiblesaModificar)) {
+            try {
+                $conn = DB::Connect();
+                $stmt = $conn->prepare("UPDATE ventas 
+                                        SET v_mail = :v_mail, v_marca = :v_marca, v_tipo = :v_tipo, v_modelo = :v_modelo, v_stock = :v_stock
+                                        WHERE v_pedido = :v_pedido");
+        
+                $stmt->bindParam(':v_pedido', $numero_pedido);
+                $stmt->bindParam(':v_mail', $mail);
+                $stmt->bindParam(':v_stock', $cantidad);
+                $stmt->bindParam(':v_tipo', $tipo);
+                $stmt->bindParam(':v_marca', $marca);
+                $stmt->bindParam(':v_modelo', $modelo);
+        
+                $stmt->execute();
+        
+                if ($stmt->rowCount() == 0) {
+                    return "No existe numero de pedido";
+                } else {
+                    return "Actualizado";
+                }
+            } catch (PDOException $e) {
+                echo "Error: " . $e->getMessage();
+                return false;
+            }
+        }
+        else{
+            return 'Producto no disponible en catalogo o sin Stock suficiente'; 
+        }
+        
+       
+        
     }
     public static function chequearProductosVendidos($fecha){
         $conn = DB::Connect();
@@ -350,7 +481,6 @@ class ControladorVenta{
         
         return($productosentreValores);
     }
-
     public static function insertVenta($venta) {
         date_default_timezone_set("America/Argentina/Buenos_Aires"); 
         $v_fecha = date("d / M / o");
@@ -386,40 +516,40 @@ class ControladorVenta{
             return false;
         }
     }
+    public static function traerCSV($array,$archivoCSV){
+        
+        if (!file_exists($archivoCSV)){
+            $file = fopen($archivoCSV, 'w+'); 
     
-    function updateprodtablaSQL(Request $request, Response $response, array $args): Response {
+            if (!empty($array)) {
+                $columnas = array_keys($array[0]);//me extrae las keys de cada array asociativo para que no tenga que hacelro manual y pueda generalizar
+                fputcsv($file, $columnas);
+            }
+            foreach ($array as $valores) {
+                fputcsv($file, $valores); 
+            }
+        
+            fclose($file);
+        } 
+        else{
+            $file = fopen($archivoCSV, 'w+'); 
     
+            if (!empty($array)) {
+                $columnas = array_keys($array[0]);//me extrae las keys de cada array asociativo para que no tenga que hacelro manual y pueda generalizar
+                fputcsv($file, $columnas);
+            }
+            foreach ($array as $valores) {
+                fputcsv($file, $valores); 
+            }
         
-        $archivoCSV='vs.csv';
-
-
-        $csvContenido = file_get_contents($archivoCSV);
-        $arraynuevo=array();
-        $contenidoArray= explode("\n",$csvContenido);
-        array_pop($contenidoArray);//me saca el ultimo string vacio "" que aparece al final de cada CSV
-        array_shift($contenidoArray);//me saca el primer array de strings que contiene los headers de mi CSV
-        
-
-        $conn = DB::Connect(); 
-        $stmt1=$conn->prepare("DELETE FROM vs");
-        $stmt1->execute();
-
-        $stmtAlter = $conn->prepare("ALTER TABLE vs AUTO_INCREMENT = 1");
-        $stmtAlter->execute();
-
-        foreach ($contenidoArray as $strings){
-            $arraydeString=explode(",",$strings);
-
-            $stmt = $conn->prepare("INSERT INTO vs (v_nombre, v_categoria, v_precio) VALUES (:v_nombre, :v_categoria, :v_precio)");
-             
-            $stmt->bindParam(':v_nombre', $arraydeString[1]); 
-            $stmt->bindParam(':v_categoria', $arraydeString[2]); 
-            $stmt->bindParam(':v_precio', $arraydeString[3]); 
-        
-            $stmt->execute();
+            fclose($file);
         }
-        return $response->withStatus(200);
+        
+    
+
+        
     }
+
     
     
 
