@@ -201,24 +201,28 @@ class ControladorVenta{
 
     }
     function descargarVentasCSV(Request $request, Response $response, array $args): Response {
-        
         $listadeventas = self::select();
-        
-        
         $ventasArray = json_decode(json_encode($listadeventas), true);
-        $archivoCSV='ventas.csv';
-        self::traerCSV($ventasArray,$archivoCSV);
     
-
-        $csvContenido = file_get_contents($archivoCSV);
-
+        
+        $response = $response->withHeader('Content-Type', 'text/csv')
+                             ->withHeader('Content-Disposition', 'attachment; filename="ventas.csv"')
+                             ->withStatus(200); // OK
     
-        $response = $response->withHeader('Content-Type', 'text/csv') // Hay que setear los headers para que en el output pueda aparecer el csv
-                            ->withHeader('Content-Disposition', 'attachment; filename="' . $archivoCSV . '"')
-                            ->withStatus(200); // OK
-
-        // Write CSV content to response body
-        $response->getBody()->write($csvContenido);
+        
+        $output = fopen('php://output', 'w');//escribe el CSV en la repsueta directamente
+    
+        if (!empty($ventasArray)) {
+            $columnas = array_keys($ventasArray[0]);//me extrae las keys de cada array asociativo para que no tenga que hacelro manual y pueda generalizar
+            fputcsv($output, $columnas);
+        }
+    
+        foreach ($ventasArray as $valores) {
+            fputcsv($output, $valores);
+        }
+    
+        fclose($output);
+        
         return $response;
     }
 
@@ -515,39 +519,6 @@ class ControladorVenta{
             echo "Error: " . $e->getMessage();
             return false;
         }
-    }
-    public static function traerCSV($array,$archivoCSV){
-        
-        if (!file_exists($archivoCSV)){
-            $file = fopen($archivoCSV, 'w+'); 
-    
-            if (!empty($array)) {
-                $columnas = array_keys($array[0]);//me extrae las keys de cada array asociativo para que no tenga que hacelro manual y pueda generalizar
-                fputcsv($file, $columnas);
-            }
-            foreach ($array as $valores) {
-                fputcsv($file, $valores); 
-            }
-        
-            fclose($file);
-        } 
-        else{
-            $file = fopen($archivoCSV, 'w+'); 
-    
-            if (!empty($array)) {
-                $columnas = array_keys($array[0]);//me extrae las keys de cada array asociativo para que no tenga que hacelro manual y pueda generalizar
-                fputcsv($file, $columnas);
-            }
-            foreach ($array as $valores) {
-                fputcsv($file, $valores); 
-            }
-        
-            fclose($file);
-        }
-        
-    
-
-        
     }
 
     
