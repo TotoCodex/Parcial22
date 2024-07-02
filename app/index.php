@@ -92,6 +92,32 @@ $app->post('/login', function (Request $request, Response $response, array $args
 	return $controlador->loginUsuario($request,$response,$args);
 });
 
+$app->get('/ventas/pdf', function (Request $request, Response $response, array $args) {
+	$controlador = new ControladorVenta();	
+	return $controlador->descargarVentasPDF($request,$response,$args);
+})->add(new ConfirmacionPerfil(['admin']));
+
+$app->group('/recuperatorio/consultas',function(RouteCollectorProxy $group){
+	$group->get('/productos/porStock', function (Request $request, Response $response, array $args) {
+		$controlador = new ControladorTienda();	
+		return $controlador-> traerproductoPorStock($request,$response,$args);
+	});
+	$group->get('/productos/porPrecio', function (Request $request, Response $response, array $args) {
+		$controlador = new ControladorTienda();	
+		return $controlador-> traerproductoPorPrecio($request,$response,$args);
+	});
+	$group->get('/productos/menosVendido', function (Request $request, Response $response, array $args) {
+		$controlador = new ControladorVenta();	
+		return $controlador-> productoMenosVendido($request,$response,$args);
+	});
+	
+})->add(new ConfirmacionPerfil(['admin','empleado']));
+
+$app->get('/usuarios/pdf', function (Request $request, Response $response, array $args) {
+	$controlador = new ControladorUsuario();	
+	return $controlador->descargarUsuariosPDF($request,$response,$args);
+})->add(new ConfirmacionPerfil(['admin']));
+
 $app->addBodyParsingMiddleware();
 
 $app->run();

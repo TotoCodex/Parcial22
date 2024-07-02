@@ -59,6 +59,70 @@ class ControladorTienda{
     
         
     }
+    function traerproductoPorPrecio(Request $request, Response $response, array $args): Response {
+        $orden= $request->getQueryParams()['orden'];
+
+
+        if($orden == 'ASC'){
+            $conn= DB::Connect();
+
+            $select = "SELECT * FROM tienda ORDER BY producto_precio ASC";
+            $stmt= $conn->prepare($select);
+            $stmt->execute();
+            $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $response->getBody()->write(json_encode([$productos]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        }
+        if($orden == 'DESC'){
+                $conn= DB::Connect();
+    
+                $select = "SELECT * FROM tienda ORDER BY producto_precio DESC";
+                $stmt= $conn->prepare($select);
+                $stmt->execute();
+                $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $response->getBody()->write(json_encode([$productos]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(200);  
+             }
+        else{
+            $response->getBody()->write(json_encode(['message->Error, rellene los campos con ASC o DES']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }   
+        
+          
+
+    }
+    function traerproductoPorStock(Request $request, Response $response, array $args): Response {
+        $orden= $request->getQueryParams()['orden'];
+
+
+        if($orden == 'ASC'){
+            $conn= DB::Connect();
+
+            $select = "SELECT * FROM tienda ORDER BY producto_stock ASC";
+            $stmt= $conn->prepare($select);
+            $stmt->execute();
+            $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $response->getBody()->write(json_encode([$productos]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        }
+        if($orden == 'DESC'){
+                $conn= DB::Connect();
+    
+                $select = "SELECT * FROM tienda ORDER BY producto_stock DESC";
+                $stmt= $conn->prepare($select);
+                $stmt->execute();
+                $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $response->getBody()->write(json_encode([$productos]));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(200);  
+             }
+        else{
+            $response->getBody()->write(json_encode(['message->Error, rellene los campos con ASC o DES']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }   
+        
+          
+
+    }
     public function guardarproductoImagen($tipo,$modelo){
         $directorioCreado=false;
         if(!file_exists("ImagenesDeProductos/2024/")){
@@ -108,7 +172,7 @@ class ControladorTienda{
 
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
+    
     public static function chequearMarcaTipo($marca,$tipo){
         $conn = DB::Connect();
         $stmt = $conn->prepare("SELECT * FROM tienda WHERE producto_tipo = :tipo AND producto_marca = :marca");

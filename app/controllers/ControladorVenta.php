@@ -176,6 +176,14 @@ class ControladorVenta{
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
                                            
     }
+    function productoMenosVendido(Request $request, Response $response, array $args): Response {
+            
+        $arraycontenedordeStocks = self::chequearProductoMasVendido();
+        $productomenosVendido = self::buscarProductoMenorStock($arraycontenedordeStocks);
+        $response->getBody()->write(json_encode([$productomenosVendido]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+                                           
+    }
     function ventasModificar(Request $request, Response $response, array $args): Response {
         $numero_pedido = $request->getParsedBody()['numero_pedido'];
         $mail = $request->getParsedBody()['mail'];
@@ -225,7 +233,56 @@ class ControladorVenta{
         
         return $response;
     }
-
+    function descargarVentasPDF(Request $request, Response $response, array $args): Response {
+        $listadeventas = self::select();
+        $ventasArray = json_decode(json_encode($listadeventas), true);
+    
+       
+        $tempFile = tmpfile();
+        $csvFilePath = stream_get_meta_data($tempFile)['uri'];
+    
+        $output = fopen($csvFilePath, 'w');
+        if (!empty($ventasArray)) {
+            $columnas = array_keys($ventasArray[0]);
+            fputcsv($output, $columnas);
+        }
+        foreach ($ventasArray as $valores) {
+            fputcsv($output, $valores);
+        }
+        fclose($output);
+    
+        
+        $pdf = new FPDF();
+        $pdf->AddPage();
+        $pdf->SetFont('Arial', '', 7);
+    
+        
+        if (($handle = fopen($csvFilePath, 'r')) !== false) {
+            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                foreach ($data as $cell) {
+                    $pdf->Cell(22, 10, $cell, 1);
+                }
+                $pdf->Ln();
+            }
+            fclose($handle);
+        }
+    
+        
+        $pdfContent = $pdf->Output('S');
+    
+        
+        $response = $response->withHeader('Content-Type', 'application/pdf')
+                             ->withHeader('Content-Disposition', 'attachment; filename="ventas.pdf"')
+                             ->withStatus(200);
+    
+        $response->getBody()->write($pdfContent);
+    
+        
+        fclose($tempFile);
+    
+        return $response;
+    }
+    
     public static function select(){
         $conn= DB::Connect();
 
@@ -320,6 +377,19 @@ class ControladorVenta{
     
         foreach ($arraycontenedordeStocks as $producto) {
             if ($producto['total_stock'] > $maxStock) {
+                $maxStock = $producto['total_stock'];
+                $productoMasStock = $producto;
+            }
+        }
+    
+        return $productoMasStock;
+    }
+    public static function buscarProductoMenorStock($arraycontenedordeStocks) {
+        $maxStock = PHP_INT_MAX;
+        $productoMasStock = null;
+    
+        foreach ($arraycontenedordeStocks as $producto) {
+            if ($producto['total_stock'] < $maxStock) {
                 $maxStock = $producto['total_stock'];
                 $productoMasStock = $producto;
             }
@@ -457,6 +527,7 @@ class ControladorVenta{
     
         return $arraycontenedordeStocks;
     }
+    
     public static function chequearVentasPorUsuario($usuario){
         $conn = DB::Connect();
         $stmt = $conn->prepare("SELECT * FROM ventas WHERE v_mail = :mail");
@@ -520,6 +591,7 @@ class ControladorVenta{
             return false;
         }
     }
+
 
     
     

@@ -569,6 +569,128 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "DescargarVentasPDF",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:666/ventas/pdf",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"ventas",
+						"pdf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TraerProductoporStock",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:666/ventas/pdf",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"ventas",
+						"pdf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TraerProductoporPrecio",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:666/ventas/pdf",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"ventas",
+						"pdf"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "TraerProductoMenosVendido",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTk5NTgzMTYsImV4cCI6MTcyMDAxODMxNiwiYXVkIjoiYTA4OTIxYzA2YmIxNGVlMDc1OTdmMzE4YTQ2ZjVhNDU0YzliYmIwMyIsImRhdGEiOnsidXNlcm5hbWUiOiJ0b2JpYXMyMyIsInBlcmZpbCI6ImFkbWluIn0sImFwcCI6IlRlc3QgSldUIn0.Utv_QH1hI2Ye5TS_xtloc3MliAL_VUDMMUVNapTJEIs",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:666/recuperatorio/consultas/productos/menosVendido",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"recuperatorio",
+						"consultas",
+						"productos",
+						"menosVendido"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DescargarUsuariosPDF",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3MTk5NjA3MTEsImV4cCI6MTcyMDAyMDcxMSwiYXVkIjoiYTA4OTIxYzA2YmIxNGVlMDc1OTdmMzE4YTQ2ZjVhNDU0YzliYmIwMyIsImRhdGEiOnsidXNlcm5hbWUiOiJ0b2JpYXMyMyIsInBlcmZpbCI6ImFkbWluIn0sImFwcCI6IlRlc3QgSldUIn0.3yJG5KnKvc0-A3rspgT3C4QU0p5KMCzRLxraDltIVdA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:666/usuarios/pdf",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "666",
+					"path": [
+						"usuarios",
+						"pdf"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
